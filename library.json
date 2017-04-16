@@ -1,0 +1,14 @@
+{
+    "name": "EEPROM",
+    "keywords": "eeprom",
+    "description": "Port of EEPROM from https://github.com/esp8266/Arduino.git",
+    "authors":
+    {
+        "name": "Scott Price",
+        "email": "prices@hugllc.com",
+        "url": "https://github.com/hugllc/EEPROM"
+    },
+    "version": "1.0",
+    "frameworks": "arduino",
+    "platforms": ["espressif32"]
+}
