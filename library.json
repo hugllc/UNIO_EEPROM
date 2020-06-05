@@ -1,5 +1,5 @@
 {
-    "name": "EEPROM",
+    "name": "UNIO_EEPROM",
     "keywords": "eeprom",
     "description": "Port of EEPROM from https://github.com/esp8266/Arduino.git",
     "authors":
@@ -10,5 +10,12 @@
     },
     "version": "1.0",
     "frameworks": "arduino",
-    "platforms": ["espressif32"]
+    "dependencies":
+    [
+        {
+            "name": "UNIO",
+            "version": "https://github.com/hugllc/UNIO.git",
+        }
+    ],
+    "platforms": ["atmelsam"]
 }
