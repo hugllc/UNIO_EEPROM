@@ -14,7 +14,7 @@
     [
         {
             "name": "UNIO",
-            "version": "https://github.com/hugllc/UNIO.git",
+            "version": "https://github.com/hugllc/UNIO.git"
         }
     ],
     "platforms": ["atmelsam"]
