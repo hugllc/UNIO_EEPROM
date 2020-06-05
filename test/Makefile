@@ -1,5 +1,6 @@
 BASEDIR:= $(abspath ../)
 SRCDIR:= $(abspath ../src/)
+BUILDDIR:= $(abspath ./build)
 
 TEST_OBJECTS:=main.o test_unio_eeprom.o UNIO_EEPROM.o
 
@@ -7,7 +8,7 @@ HEADER_FILES:=main.h
 TEST_TARGET:=UNIO_EEPROM
 TEST_NAME:=
 
-TARGET:=HUGnetNGDev
+TARGET:=UNIO_EEPROM
 
 
 CFLAGS_TARGET+=-fprofile-arcs -ftest-coverage -Wall -Werror -Wextra -Wno-unused-parameter -std=gnu++11 -gdwarf-2
@@ -34,14 +35,14 @@ VPATH = $(SRCDIR) $(abspath $(shell pwd))
 all: clean test coverage
 
 coverage: run_test junit
-	mkdir -p $(BASEDIR)/build/logs
-	lcov -o $(BASEDIR)/build/rawcoverage.info -c -d . ;
-	lcov -e $(BASEDIR)/build/rawcoverage.info $(SRCDIR)/* --path $(BASEDIR) -o $(BASEDIR)/build/report.info;
-	genhtml -o $(BASEDIR)/build/coverage \
+	mkdir -p $(BUILDDIR)/logs
+	lcov -o $(BUILDDIR)/rawcoverage.info -c -d . ;
+	lcov -e $(BUILDDIR)/rawcoverage.info $(SRCDIR)/* --path $(BASEDIR) -o $(BUILDDIR)/report.info;
+	genhtml -o $(BUILDDIR)/coverage \
 			--legend --title 'Firmware Code Coverage Report' \
-			$(BASEDIR)/build/report.info;
-	gcovr -f '${SRCDIR}/' -r $(BASEDIR) -x -o $(BASEDIR)/build/logs/cobertura.xml
-	cp -R *-Results.xml $(BASEDIR)/build/logs
+			$(BUILDDIR)/report.info;
+	gcovr -f '${SRCDIR}/' -r $(BASEDIR) -x -o $(BUILDDIR)/logs/cobertura.xml
+	cp -R *-Results.xml $(BUILDDIR)/logs
 
 interactive:
 	$(MAKE) test INTERACTIVE=1
@@ -68,6 +69,6 @@ $(TARGET).o : $(TARGET).cpp $(TARGET).h
 
 clean:
 	rm -f *~ *.o run_test *.gcda *.gcno *Results.xml *.orig
-	rm -Rf $(BASEDIR)/build
+	rm -Rf $(BUILDDIR)
 
 distclean: clean
