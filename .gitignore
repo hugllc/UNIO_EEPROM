@@ -35,3 +35,6 @@
 # Test Results
 *Results.xml
 run_test
+
+# build directory
+build/

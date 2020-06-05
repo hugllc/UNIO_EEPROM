@@ -1,4 +1,5 @@
 BASEDIR:= $(abspath ../)
+SRCDIR:= $(abspath ../src/)
 
 TEST_OBJECTS:=main.o test_unio_eeprom.o UNIO_EEPROM.o
 
@@ -28,11 +29,19 @@ ifeq ($(INTERACTIVE),1)
     CFLAGS_TEST += -DINTERACTIVE
 endif
 
-VPATH = $(BASEDIR) $(abspath $(shell pwd))
+VPATH = $(SRCDIR) $(abspath $(shell pwd))
 
 all: clean test coverage
 
 coverage: run_test junit
+	mkdir -p $(BASEDIR)/build/logs
+	lcov -o $(BASEDIR)/build/rawcoverage.info -c -d . ;
+	lcov -e $(BASEDIR)/build/rawcoverage.info $(SRCDIR)/* --path $(BASEDIR) -o $(BASEDIR)/build/report.info;
+	genhtml -o $(BASEDIR)/build/coverage \
+			--legend --title 'Firmware Code Coverage Report' \
+			$(BASEDIR)/build/report.info;
+	gcovr -f '${SRCDIR}/' -r $(BASEDIR) -x -o $(BASEDIR)/build/logs/cobertura.xml
+	cp -R *-Results.xml $(BASEDIR)/build/logs
 
 interactive:
 	$(MAKE) test INTERACTIVE=1
@@ -59,5 +68,6 @@ $(TARGET).o : $(TARGET).cpp $(TARGET).h
 
 clean:
 	rm -f *~ *.o run_test *.gcda *.gcno *Results.xml *.orig
+	rm -Rf $(BASEDIR)/build
 
 distclean: clean
