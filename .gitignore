@@ -27,3 +27,11 @@
 *.exe
 *.out
 *.app
+
+# Test coverage
+*.gcda
+*.gcno
+
+# Test Results
+*Results.xml
+run_test

@@ -19,18 +19,21 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef EEPROM_h
-#define EEPROM_h
+#ifndef UNIO_EEPROM_h
+#define UNIO_EEPROM_h
 
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
-class EEPROMClass {
-public:
-  EEPROMClass(uint32_t sector);
+#include <UNIO.h>
 
-  void begin(size_t size);
+class UNIOEEPROMClass {
+public:
+  UNIOEEPROMClass(uint16_t size);
+  ~UNIOEEPROMClass(void);
+
+  void begin(void);
   uint8_t read(int address);
   void write(int address, uint8_t val);
   bool commit();
@@ -43,7 +46,7 @@ public:
     if (address < 0 || address + sizeof(T) > _size)
       return t;
 
-    memcpy((uint8_t*) &t, _data + address, sizeof(T));
+    memcpy((uint8_t*) &t, _buffer + address, sizeof(T));
     return t;
   }
 
@@ -52,19 +55,16 @@ public:
     if (address < 0 || address + sizeof(T) > _size)
       return t;
 
-    memcpy(_data + address, (const uint8_t*) &t, sizeof(T));
+    memcpy(_buffer + address, (const uint8_t*) &t, sizeof(T));
     _dirty = true;
     return t;
   }
 
 protected:
-  uint32_t _sector;
-  uint8_t* _data;
+  uint8_t* _buffer;
   size_t _size;
   bool _dirty;
 };
 
-extern EEPROMClass EEPROM;
-
-#endif
+#endif // UNIO_EEPROM_H
 
