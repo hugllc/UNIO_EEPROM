@@ -25,21 +25,20 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <cstdio>
 
 #include <UNIO.h>
 
 class UNIOEEPROMClass {
 public:
-  UNIOEEPROMClass(uint16_t size);
-  ~UNIOEEPROMClass(void);
+  UNIOEEPROMClass(UNIO *unio, uint16_t size);
+  ~UNIOEEPROMClass();
 
   void begin(void);
   uint8_t read(int address);
   void write(int address, uint8_t val);
-  bool commit();
-  void end();
-
-  uint8_t * getDataPtr();
+  bool commit(void);
+  void end(void);
 
   template<typename T> 
   T &get(int address, T &t) {
@@ -61,6 +60,7 @@ public:
   }
 
 protected:
+  UNIO *_unio;
   uint8_t* _buffer;
   size_t _size;
   bool _dirty;

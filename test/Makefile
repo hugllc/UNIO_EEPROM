@@ -1,6 +1,7 @@
 BASEDIR:= $(abspath ../)
 SRCDIR:= $(abspath ../src/)
 BUILDDIR:= $(abspath ./build)
+TESTDIR:=$(abspath .)
 
 TEST_OBJECTS:=main.o test_unio_eeprom.o UNIO_EEPROM.o
 
@@ -17,6 +18,7 @@ CFLAGS+=-D_TEST_ \
         -m32 \
         -I$(shell pwd) \
         -I$(BASEDIR) \
+        -I$(SRCDIR) \
         -DPROGMEM= \
 		-DEEPROM_SIZE=128 \
         -fsanitize=address
@@ -30,7 +32,7 @@ ifeq ($(INTERACTIVE),1)
     CFLAGS_TEST += -DINTERACTIVE
 endif
 
-VPATH = $(SRCDIR) $(abspath $(shell pwd))
+VPATH = $(SRCDIR) $(TESTDIR)
 
 all: clean test coverage
 

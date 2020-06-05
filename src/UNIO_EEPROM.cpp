@@ -22,22 +22,26 @@
 #include "Arduino.h"
 #include "UNIO_EEPROM.h"
 
-UNIOEEPROMClass::UNIOEEPROMClass(uint16_t size)
- : _size(size), _dirty(false)
+UNIOEEPROMClass::UNIOEEPROMClass(UNIO *unio, uint16_t size)
+ : _unio(unio), _size(size), _dirty(false)
 {
-    _buffer = new uint8_t(size);
+    _buffer = new uint8_t[size];
 }
 
-UNIOEEPROMClass::~UNIOEEPROMClass(void)
+UNIOEEPROMClass::~UNIOEEPROMClass()
 {
-    delete _buffer;
+    end();
+    delete [] _buffer;
 }
 
 void UNIOEEPROMClass::begin(void) {
+    // Read out the E2
+    _unio->read(_buffer, 0, _size);
 }
 
-void UNIOEEPROMClass::end() {
-    delete _buffer;
+void UNIOEEPROMClass::end(void) {
+    // Commit any changes before we end
+    commit();
 }
 
 
@@ -46,7 +50,6 @@ uint8_t UNIOEEPROMClass::read(int address) {
         return 0;
     if(!_buffer)
         return 0;
-
     return _buffer[address];
 }
 
@@ -65,7 +68,7 @@ void UNIOEEPROMClass::write(int address, uint8_t value) {
     }
 }
 
-bool UNIOEEPROMClass::commit() {
+bool UNIOEEPROMClass::commit(void) {
     bool ret = false;
     if (!_size)
         return false;
@@ -74,14 +77,7 @@ bool UNIOEEPROMClass::commit() {
     if(!_buffer)
         return false;
 
-    noInterrupts();
-
-    interrupts();
-
+    _unio->simple_write(_buffer, 0, _size);
+    _dirty = false;
     return ret;
-}
-
-uint8_t * UNIOEEPROMClass::getDataPtr() {
-    _dirty = true;
-    return &_buffer[0];
 }

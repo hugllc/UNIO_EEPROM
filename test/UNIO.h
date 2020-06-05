@@ -29,7 +29,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <cstring>
 #include <cstdint>
-   
+#include <cstdio>
+
 class UNIO {
     private:
     uint8_t _buffer[EEPROM_SIZE];
@@ -39,6 +40,8 @@ class UNIO {
     int16_t _wtimer;
     
     public:
+    uint32_t writecounter;
+
     /**
      * @brief Constructor for UNIO library
      * 
@@ -47,8 +50,8 @@ class UNIO {
      * For Arduino UNO or Nano the pin must be a Port D Pin number
      * For Arduino SAMC the pin must be a Port A pin number
      */
-    UNIO(uint8_t address)
-    :_addr(address), _wenable(false), _protect(0), _wtimer(0)
+    UNIO(uint8_t address = 0)
+    :_addr(address), _wenable(false), _protect(0), _wtimer(0), writecounter(0)
     {
         // Clear the memory
         memset(_buffer, 0xff, EEPROM_SIZE);
@@ -62,7 +65,7 @@ class UNIO {
         still have been overwritten. */
     bool read(uint8_t *buffer, uint16_t address, uint16_t length)
     {
-        if ((address + length) < EEPROM_SIZE) {
+        if ((address + length) <= EEPROM_SIZE) {
             memcpy(buffer, &_buffer[address], length);
             return true;
         }
@@ -83,9 +86,11 @@ class UNIO {
         finished. */
     bool start_write(const uint8_t *buffer, uint16_t address, uint16_t length)
     {
-        if ((address + length) < EEPROM_SIZE) {
+        if ((address + length) <= EEPROM_SIZE) {
             memcpy(&_buffer[address], buffer, length);
+            _wtimer = (length / 8) + 1;
             disable_write();
+            writecounter++;
             return true;
         }
         return false;
@@ -191,6 +196,22 @@ class UNIO {
             return false;
         }
         return await_write_complete();
+    }
+
+    bool set(uint16_t addr, uint8_t value)
+    {
+        if (addr < EEPROM_SIZE) {
+            _buffer[addr] = value;
+            return true;
+        }
+        return false;
+    }
+    uint8_t get(uint16_t addr)
+    {
+        if (addr < EEPROM_SIZE) {
+            return _buffer[addr];
+        }
+        return 0;
     }
 };
 

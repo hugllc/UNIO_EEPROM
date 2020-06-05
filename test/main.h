@@ -14,6 +14,8 @@
 #define TEST_H
 
 #include "fct.h"
+#include "UNIO.h"
+#include "UNIO_EEPROM.h"
 
 void TestInit(void);
 
