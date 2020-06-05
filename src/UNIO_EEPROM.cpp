@@ -25,7 +25,9 @@
 UNIOEEPROMClass::UNIOEEPROMClass(UNIO *unio, uint16_t size)
  : _unio(unio), _size(size), _dirty(false)
 {
-    _buffer = new uint8_t[size];
+    if (size > 0) {
+        _buffer = new uint8_t[size];
+    }
 }
 
 UNIOEEPROMClass::~UNIOEEPROMClass()
@@ -36,7 +38,9 @@ UNIOEEPROMClass::~UNIOEEPROMClass()
 
 void UNIOEEPROMClass::begin(void) {
     // Read out the E2
-    _unio->read(_buffer, 0, _size);
+    if (_size > 0) {
+        _unio->read(_buffer, 0, _size);
+    }
 }
 
 void UNIOEEPROMClass::end(void) {
@@ -46,18 +50,16 @@ void UNIOEEPROMClass::end(void) {
 
 
 uint8_t UNIOEEPROMClass::read(int address) {
-    if (address < 0 || (size_t)address >= _size)
+    if (!_goodAddress(address)) {
         return 0;
-    if(!_buffer)
-        return 0;
+    }
     return _buffer[address];
 }
 
 void UNIOEEPROMClass::write(int address, uint8_t value) {
-    if (address < 0 || (size_t)address >= _size)
+    if (!_goodAddress(address)) {
         return;
-    if(!_buffer)
-        return;
+    }
 
     // Optimise _dirty. Only flagged if data written is different.
     uint8_t* data = &_buffer[address];
@@ -70,14 +72,16 @@ void UNIOEEPROMClass::write(int address, uint8_t value) {
 
 bool UNIOEEPROMClass::commit(void) {
     bool ret = false;
-    if (!_size)
+    if(!_buffer)
         return false;
     if(!_dirty)
         return true;
-    if(!_buffer)
-        return false;
 
     _unio->simple_write(_buffer, 0, _size);
     _dirty = false;
     return ret;
+}
+
+bool UNIOEEPROMClass::_goodAddress(int address) {
+    return !((address < 0) || ((size_t)address >= _size) || !_buffer);
 }

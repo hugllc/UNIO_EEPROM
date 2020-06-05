@@ -42,7 +42,7 @@ public:
 
   template<typename T> 
   T &get(int address, T &t) {
-    if (address < 0 || address + sizeof(T) > _size)
+    if (!_goodAddress(address) || address + sizeof(T) > _size)
       return t;
 
     memcpy((uint8_t*) &t, _buffer + address, sizeof(T));
@@ -51,7 +51,7 @@ public:
 
   template<typename T> 
   const T &put(int address, const T &t) {
-    if (address < 0 || address + sizeof(T) > _size)
+    if (!_goodAddress(address) || address + sizeof(T) > _size)
       return t;
 
     memcpy(_buffer + address, (const uint8_t*) &t, sizeof(T));
@@ -61,9 +61,10 @@ public:
 
 protected:
   UNIO *_unio;
-  uint8_t* _buffer;
+  uint8_t* _buffer = NULL;
   size_t _size;
   bool _dirty;
+  bool _goodAddress(int address);
 };
 
 #endif // UNIO_EEPROM_H

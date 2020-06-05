@@ -198,5 +198,102 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
         fct_xchk(value == expect, "Expected %u got %u", expect, value);
     }
     FCT_TEST_END()
+    /**
+     * @brief Test
+     *
+     * @return void
+     */
+    FCT_TEST_BGN(write() does not crash when given a negative address) {
+        UNIO unio = UNIO();
+        int32_t expect = 682024;
+        int16_t addr = -1000;
+        UNIOEEPROMClass EEPROM(&unio, EEPROM_SIZE);
+        EEPROM.begin();
+        EEPROM.write(addr, expect);
+        // This will segfault if it fails
+    }
+    FCT_TEST_END()
+    /**
+     * @brief Test
+     *
+     * @return void
+     */
+    FCT_TEST_BGN(write() does not crash when given an address out of range) {
+        UNIO unio = UNIO();
+        int32_t expect = 682024;
+        int16_t addr = EEPROM_SIZE * 5;
+        UNIOEEPROMClass EEPROM(&unio, EEPROM_SIZE);
+        EEPROM.begin();
+        EEPROM.write(addr, expect);
+        // This will segfault if it fails
+    }
+    FCT_TEST_END()
+    /**
+     * @brief Test
+     *
+     * @return void
+     */
+    FCT_TEST_BGN(read() does not crash when given a negative address) {
+        UNIO unio = UNIO();
+        int16_t addr = -1000;
+        UNIOEEPROMClass EEPROM(&unio, EEPROM_SIZE);
+        EEPROM.begin();
+        EEPROM.read(addr);
+        // This will segfault if it fails
+    }
+    FCT_TEST_END()
+    /**
+     * @brief Test
+     *
+     * @return void
+     */
+    FCT_TEST_BGN(read() does not crash when given an address out of range) {
+        UNIO unio = UNIO();
+        int16_t addr = EEPROM_SIZE * 5;
+        UNIOEEPROMClass EEPROM(&unio, EEPROM_SIZE);
+        EEPROM.begin();
+        EEPROM.read(addr);
+        // This will segfault if it fails
+    }
+    FCT_TEST_END()
+    /**
+     * @brief Test
+     *
+     * @return void
+     */
+    FCT_TEST_BGN(commit() when size is 0) {
+        UNIO unio = UNIO();
+        UNIOEEPROMClass EEPROM(&unio, 0);
+        EEPROM.begin();
+        EEPROM.commit();
+        // This will segfault if it fails
+    }
+    FCT_TEST_END()
+    /**
+     * @brief Test
+     *
+     * @return void
+     */
+    FCT_TEST_BGN(read() when size is 0) {
+        UNIO unio = UNIO();
+        UNIOEEPROMClass EEPROM(&unio, 0);
+        EEPROM.begin();
+        EEPROM.read(0);
+        // This will segfault if it fails
+    }
+    FCT_TEST_END()
+    /**
+     * @brief Test
+     *
+     * @return void
+     */
+    FCT_TEST_BGN(write() when size is 0) {
+        UNIO unio = UNIO();
+        UNIOEEPROMClass EEPROM(&unio, 0);
+        EEPROM.begin();
+        EEPROM.write(0, 15);
+        // This will segfault if it fails
+    }
+    FCT_TEST_END()
 }
 FCTMF_FIXTURE_SUITE_END();
