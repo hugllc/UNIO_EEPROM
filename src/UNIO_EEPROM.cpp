@@ -22,9 +22,12 @@
 #include "Arduino.h"
 #include "UNIO_EEPROM.h"
 
-UNIOEEPROMClass::UNIOEEPROMClass(UNIO *unio, uint16_t size)
- : _unio(unio), _size(size), _dirty(false)
+UNIOEEPROMClass::UNIOEEPROMClass(UNIO *unio, size_t size, uint8_t blockSize)
+ : _unio(unio), _size(size), _dirty(false), _blockSize(blockSize)
 {
+    if (_blockSize > size) {
+        _blockSize = size;
+    }
     if (size > 0) {
         _buffer = new uint8_t[size];
     }
@@ -70,6 +73,43 @@ void UNIOEEPROMClass::write(int address, uint8_t value) {
     }
 }
 
+bool UNIOEEPROMClass::readBlock(int block, uint8_t *buffer) {
+    int address = _blockAddress(block);
+    if (!_goodAddress(address, _blockSize) || !buffer || (_blockSize == 0)) {
+        return false;
+    }
+    memcpy(buffer, &_buffer[address], _blockSize);
+    return true;
+}
+
+bool UNIOEEPROMClass::writeBlock(int block, uint8_t *buffer) {
+    int address = _blockAddress(block);
+    uint8_t index;
+    uint8_t * data;
+    if (!_goodAddress(address, _blockSize) || !buffer || (_blockSize == 0)) {
+        return false;
+    }
+    // Optimise _dirty. Only flagged if data written is different.
+    for (index = 0; index < _blockSize; index++) {
+        data = &_buffer[address + index];
+        if (*data != buffer[index])
+        {
+            *data = buffer[index];
+            _dirty = true;
+        }
+
+    }
+    return true;
+}
+
+bool UNIOEEPROMClass::copyBlock(int dest, int src) {
+    int address = _blockAddress(src);
+    if (!_goodAddress(address, _blockSize)) {
+        return false;
+    }
+    return writeBlock(dest, &_buffer[address]);
+}
+
 bool UNIOEEPROMClass::commit(void) {
     bool ret = false;
     if(!_buffer)
@@ -80,8 +120,4 @@ bool UNIOEEPROMClass::commit(void) {
     _unio->simple_write(_buffer, 0, _size);
     _dirty = false;
     return ret;
-}
-
-bool UNIOEEPROMClass::_goodAddress(int address) {
-    return !((address < 0) || ((size_t)address >= _size) || !_buffer);
 }

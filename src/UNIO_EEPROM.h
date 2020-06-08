@@ -31,40 +31,63 @@
 
 class UNIOEEPROMClass {
 public:
-  UNIOEEPROMClass(UNIO *unio, uint16_t size);
-  ~UNIOEEPROMClass();
+    UNIOEEPROMClass(UNIO *unio, size_t size, uint8_t blockSize = 0);
+    ~UNIOEEPROMClass();
 
-  void begin(void);
-  uint8_t read(int address);
-  void write(int address, uint8_t val);
-  bool commit(void);
-  void end(void);
+    void begin(void);
+    uint8_t read(int address);
+    void write(int address, uint8_t val);
+    bool commit(void);
+    void end(void);
 
-  template<typename T> 
-  T &get(int address, T &t) {
-    if (!_goodAddress(address) || address + sizeof(T) > _size)
-      return t;
+    bool readBlock(int block, uint8_t *buffer);
+    bool writeBlock(int block, uint8_t *data);
+    bool copyBlock(int dest, int src);
 
-    memcpy((uint8_t*) &t, _buffer + address, sizeof(T));
-    return t;
-  }
+    size_t size() {
+        return _size;
+    }
+    size_t blockSize() {
+        return _blockSize;
+    }
+    template<typename T> 
+    T &get(int address, T &t) {
+        if (!_goodAddress(address, sizeof(T))) {
+        return t;
+        }
 
-  template<typename T> 
-  const T &put(int address, const T &t) {
-    if (!_goodAddress(address) || address + sizeof(T) > _size)
-      return t;
+        memcpy((uint8_t*) &t, _buffer + address, sizeof(T));
+        return t;
+    }
 
-    memcpy(_buffer + address, (const uint8_t*) &t, sizeof(T));
-    _dirty = true;
-    return t;
-  }
+    template<typename T> 
+    const T &put(int address, const T &t) {
+        if (!_goodAddress(address, sizeof(T))) {
+        return t;
+        }
+        memcpy(_buffer + address, (const uint8_t*) &t, sizeof(T));
+        _dirty = true;
+        return t;
+    }
 
 protected:
-  UNIO *_unio;
-  uint8_t* _buffer = NULL;
-  size_t _size;
-  bool _dirty;
-  bool _goodAddress(int address);
+    UNIO *_unio;
+    uint8_t* _buffer = NULL;
+    size_t _size;
+    bool _dirty;
+    uint8_t _blockSize;
+    
+    bool _goodAddress(int address, size_t size = 0)
+    {
+        int addr = address + size;
+        return !((address < 0) || ((size_t)addr >= _size) || !_buffer);
+    }
+
+    int _blockAddress(int block)
+    {
+        return block * _blockSize;
+    }
+
 };
 
 #endif // UNIO_EEPROM_H

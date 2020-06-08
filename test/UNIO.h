@@ -33,11 +33,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 class UNIO {
     private:
-    uint8_t _buffer[EEPROM_SIZE];
+    uint8_t *_buffer;
     uint8_t _addr;
     bool _wenable;
     uint8_t _protect;
     int16_t _wtimer;
+    uint32_t _size;
     
     public:
     uint32_t writecounter;
@@ -50,12 +51,19 @@ class UNIO {
      * For Arduino UNO or Nano the pin must be a Port D Pin number
      * For Arduino SAMC the pin must be a Port A pin number
      */
-    UNIO(uint8_t address = 0)
-    :_addr(address), _wenable(false), _protect(0), _wtimer(0), writecounter(0)
+    UNIO(uint8_t address = 0, uint32_t size = 128)
+    :_addr(address), _wenable(false), _protect(0), _wtimer(0), _size(size), writecounter(0)
     {
+        _buffer = new uint8_t[size];
         // Clear the memory
         memset(_buffer, 0xff, EEPROM_SIZE);
     }
+
+    ~UNIO()
+    {
+        delete [] _buffer;
+    }
+
 
     /* All the following calls return true for success and false for
         failure. */
@@ -197,7 +205,6 @@ class UNIO {
         }
         return await_write_complete();
     }
-
     bool set(uint16_t addr, uint8_t value)
     {
         if (addr < EEPROM_SIZE) {
@@ -213,6 +220,14 @@ class UNIO {
         }
         return 0;
     }
+    void incrementPattern(void)
+    {
+        uint32_t index;
+        for (index = 0; index < EEPROM_SIZE; index++) {
+            set(index, index & 0xFF);
+        }
+    }
+
 };
 
 #endif /* _UNIO_LIB_H */
