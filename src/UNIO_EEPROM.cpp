@@ -23,7 +23,7 @@
 #include "UNIO_EEPROM.h"
 
 UNIOEEPROMClass::UNIOEEPROMClass(UNIO *unio, size_t size, uint8_t blockSize)
- : _unio(unio), _size(size), _dirty(false), _blockSize(blockSize)
+ : _unio(unio), _size(size), _blockSize(blockSize), _pages(size / PAGE_SIZE)
 {
     if (_blockSize > size) {
         _blockSize = size;
@@ -31,12 +31,14 @@ UNIOEEPROMClass::UNIOEEPROMClass(UNIO *unio, size_t size, uint8_t blockSize)
     if (size > 0) {
         _buffer = new uint8_t[size];
     }
+    _dirty = new uint8_t[(size / (PAGE_SIZE * sizeof(uint8_t))) + 1];
 }
 
 UNIOEEPROMClass::~UNIOEEPROMClass()
 {
     end();
     delete [] _buffer;
+    delete [] _dirty;
     _buffer = NULL;
 }
 
@@ -70,7 +72,7 @@ void UNIOEEPROMClass::write(int address, uint8_t value) {
     if (*data != value)
     {
         *data = value;
-        _dirty = true;
+        _setDirty(_addressPage(address));
     }
 }
 
@@ -96,7 +98,7 @@ bool UNIOEEPROMClass::writeBlock(int block, uint8_t *buffer) {
         if (*data != buffer[index])
         {
             *data = buffer[index];
-            _dirty = true;
+            _setDirty(_addressPage(address));
         }
 
     }
@@ -113,10 +115,11 @@ bool UNIOEEPROMClass::copyBlock(int dest, int src) {
 
 bool UNIOEEPROMClass::commit(void) {
     bool ret = true;
+    int page = 0;
     if(!_buffer) {
         return false;
     }
-    if(!_dirty) {
+    if(!_isDirty(page)) {
         return true;
     }
 
@@ -131,6 +134,6 @@ bool UNIOEEPROMClass::commit(void) {
         return false;
     }
 
-    _dirty = false;
+    _clearDirty(page);
     return ret;
 }

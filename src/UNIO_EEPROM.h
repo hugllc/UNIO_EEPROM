@@ -29,6 +29,10 @@
 
 #include <UNIO.h>
 
+#ifndef PAGE_SIZE
+#define PAGE_SIZE 16
+#endif
+
 class UNIOEEPROMClass {
 public:
     UNIOEEPROMClass(UNIO *unio, size_t size, uint8_t blockSize = 0);
@@ -66,16 +70,17 @@ public:
         return t;
         }
         memcpy(_buffer + address, (const uint8_t*) &t, sizeof(T));
-        _dirty = true;
+        _setDirty(_addressPage(address));
         return t;
     }
 
 protected:
     UNIO *_unio;
     uint8_t* _buffer = NULL;
+    uint8_t* _dirty;
     size_t _size;
-    bool _dirty;
     uint8_t _blockSize;
+    uint16_t _pages;
     
     bool _goodAddress(int address, size_t size = 0)
     {
@@ -86,6 +91,24 @@ protected:
     int _blockAddress(int block)
     {
         return block * _blockSize;
+    }
+
+    int _addressPage(int address)
+    {
+        return address / PAGE_SIZE;
+    }
+
+    bool _isDirty(uint16_t page)
+    {
+        return _dirty[0] & 0x01;
+    }
+    void _setDirty(uint16_t page)
+    {
+        _dirty[0] |= 0x01;
+    }
+    void _clearDirty(uint16_t page)
+    {
+        _dirty[0] &= ~0x01;
     }
 
 };
