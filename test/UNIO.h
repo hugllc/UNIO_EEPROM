@@ -42,6 +42,8 @@ class UNIO {
     
     public:
     uint32_t writecounter;
+    bool enable_write_ret = true;
+    bool start_write_ret = true;
 
     /**
      * @brief Constructor for UNIO library
@@ -94,6 +96,9 @@ class UNIO {
         finished. */
     bool start_write(const uint8_t *buffer, uint16_t address, uint16_t length)
     {
+        if (start_write_ret == false) {
+            return false;
+        }
         if ((address + length) <= EEPROM_SIZE) {
             memcpy(&_buffer[address], buffer, length);
             _wtimer = (length / 8) + 1;
@@ -108,8 +113,8 @@ class UNIO {
         the bit is cleared on a successful write. */
     bool enable_write(void)
     {
-        _wenable = true;
-        return true;
+        _wenable = enable_write_ret;
+        return enable_write_ret;
     }
     
     /* Clear the write enable bit. */
@@ -176,6 +181,14 @@ class UNIO {
         }
         return true;
     }
+    /* check to see if the write is complete. */
+    bool is_writing(void) {
+        uint8_t status;
+        if (!read_status(&status)) {
+            return false;
+        }
+        return (status & 0x1);
+    }
 
     /* Wait until there is no write operation in progress. */
     bool await_write_complete(void) {
@@ -184,7 +197,7 @@ class UNIO {
             if (!read_status(&status)) {
                 return false;
             }
-        } while (status & 0x2);
+        } while (status & 0x1);
         return true;
     }
 

@@ -37,6 +37,7 @@ UNIOEEPROMClass::~UNIOEEPROMClass()
 {
     end();
     delete [] _buffer;
+    _buffer = NULL;
 }
 
 void UNIOEEPROMClass::begin(void) {
@@ -111,13 +112,25 @@ bool UNIOEEPROMClass::copyBlock(int dest, int src) {
 }
 
 bool UNIOEEPROMClass::commit(void) {
-    bool ret = false;
-    if(!_buffer)
+    bool ret = true;
+    if(!_buffer) {
         return false;
-    if(!_dirty)
+    }
+    if(!_dirty) {
         return true;
+    }
 
-    _unio->simple_write(_buffer, 0, _size);
+    if (_unio->is_writing()) {
+        // Previous write is not finished.
+        return false;
+    } 
+    if (!_unio->enable_write()) {
+        return false;
+    }
+    if (!_unio->start_write(_buffer, 0, _size)) {
+        return false;
+    }
+
     _dirty = false;
     return ret;
 }
