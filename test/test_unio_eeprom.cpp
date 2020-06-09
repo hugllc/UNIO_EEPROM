@@ -332,7 +332,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
         UNIOEEPROMClass *EEPROM = new UNIOEEPROMClass(unio, EEPROM_SIZE);
         EEPROM->begin();
         EEPROM->write(addr, expect);
-        ret = EEPROM->commit();
+        ret = EEPROM->flush();
         fct_xchk(ret == retExpect, "Expected %s got %s", retExpect ? "TRUE" : "FALSE", ret ? "TRUE" : "FALSE");
         value = unio->get(addr);
         fct_xchk(value == expect, "Expected %u got %u", expect, value);
@@ -480,6 +480,21 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
      *
      * @return void
      */
+    FCT_TEST_BGN(flush() when size is 0) {
+        UNIO *unio = new UNIO(0, EEPROM_SIZE);
+        UNIOEEPROMClass *EEPROM = new UNIOEEPROMClass(unio, 0);
+        EEPROM->begin();
+        EEPROM->flush();
+        // This will segfault if it fails
+        delete EEPROM;
+        delete unio;
+    }
+    FCT_TEST_END()
+    /**
+     * @brief Test
+     *
+     * @return void
+     */
     FCT_TEST_BGN(commit() when size is 0) {
         UNIO *unio = new UNIO(0, EEPROM_SIZE);
         UNIOEEPROMClass *EEPROM = new UNIOEEPROMClass(unio, 0);
@@ -601,7 +616,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
         UNIOEEPROMClass *EEPROM = new UNIOEEPROMClass(unio, EEPROM_SIZE, blocksize);
         EEPROM->begin();
         ret = EEPROM->writeBlock(block, buffer);
-        EEPROM->commit();
+        EEPROM->flush();
         fct_xchk(ret == retExpect, "Expected %s got %s", retExpect ? "TRUE" : "FALSE", ret ? "TRUE" : "FALSE");
         for (index = 0; index < sizeof(buffer); index++) {
             value = unio->get(address + index);
@@ -691,7 +706,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
         UNIOEEPROMClass *EEPROM = new UNIOEEPROMClass(unio, EEPROM_SIZE, blocksize);
         EEPROM->begin();
         ret = EEPROM->readBlock(block, buffer);
-        EEPROM->commit();
+        EEPROM->flush();
         fct_xchk(ret == retExpect, "Expected %s got %s", retExpect ? "TRUE" : "FALSE", ret ? "TRUE" : "FALSE");
         for (index = 0; index < sizeof(buffer); index++) {
             value = buffer[index];
@@ -762,7 +777,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
         UNIOEEPROMClass *EEPROM = new UNIOEEPROMClass(unio, EEPROM_SIZE, blocksize);
         EEPROM->begin();
         ret = EEPROM->copyBlock(dest, src);
-        EEPROM->commit();
+        EEPROM->flush();
         fct_xchk(ret == retExpect, "Expected %s got %s", retExpect ? "TRUE" : "FALSE", ret ? "TRUE" : "FALSE");
         for (index = 0; index < blocksize; index++) {
             value = unio->get(destAddr + index);

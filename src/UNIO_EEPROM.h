@@ -33,6 +33,9 @@
 #define PAGE_SIZE 16
 #endif
 
+#define DIRTY_BIT(page) ((1 << (page & 0x7)) & 0xFF)
+#define DIRTY_BYTE(page) (page >> 3)
+
 class UNIOEEPROMClass {
 public:
     UNIOEEPROMClass(UNIO *unio, size_t size, uint8_t blockSize = 0);
@@ -42,6 +45,7 @@ public:
     uint8_t read(int address);
     void write(int address, uint8_t val);
     bool commit(void);
+    bool flush(void);
     void end(void);
 
     bool readBlock(int block, uint8_t *buffer);
@@ -81,7 +85,9 @@ protected:
     size_t _size;
     uint8_t _blockSize;
     uint16_t _pages;
-    
+    uint8_t _dirtySize;
+    uint16_t _writePage;
+
     bool _goodAddress(int address, size_t size = 0)
     {
         int addr = address + size;
@@ -97,18 +103,32 @@ protected:
     {
         return address / PAGE_SIZE;
     }
+    int _pageAddress(int page)
+    {
+        return page * PAGE_SIZE;
+    }
 
     bool _isDirty(uint16_t page)
     {
-        return _dirty[0] & 0x01;
+        uint8_t index = DIRTY_BYTE(page);
+        if (index > _dirtySize) {
+            return false;
+        }
+        return _dirty[index] & DIRTY_BIT(page);
     }
     void _setDirty(uint16_t page)
     {
-        _dirty[0] |= 0x01;
+        uint8_t index = DIRTY_BYTE(page);
+        if (index < _dirtySize) {
+            _dirty[index] |= DIRTY_BIT(page);
+        }
     }
     void _clearDirty(uint16_t page)
     {
-        _dirty[0] &= ~0x01;
+        uint8_t index = DIRTY_BYTE(page);
+        if (index < _dirtySize) {
+            _dirty[index] &= DIRTY_BIT(page);
+        }
     }
 
 };

@@ -23,7 +23,8 @@
 #include "UNIO_EEPROM.h"
 
 UNIOEEPROMClass::UNIOEEPROMClass(UNIO *unio, size_t size, uint8_t blockSize)
- : _unio(unio), _size(size), _blockSize(blockSize), _pages(size / PAGE_SIZE)
+ : _unio(unio), _size(size), _blockSize(blockSize), _pages(size / PAGE_SIZE), 
+   _dirtySize((size / (PAGE_SIZE * sizeof(uint8_t))) + 1), _writePage(0)
 {
     if (_blockSize > size) {
         _blockSize = size;
@@ -31,7 +32,7 @@ UNIOEEPROMClass::UNIOEEPROMClass(UNIO *unio, size_t size, uint8_t blockSize)
     if (size > 0) {
         _buffer = new uint8_t[size];
     }
-    _dirty = new uint8_t[(size / (PAGE_SIZE * sizeof(uint8_t))) + 1];
+    _dirty = new uint8_t[_dirtySize];
 }
 
 UNIOEEPROMClass::~UNIOEEPROMClass()
@@ -51,7 +52,7 @@ void UNIOEEPROMClass::begin(void) {
 
 void UNIOEEPROMClass::end(void) {
     // Commit any changes before we end
-    commit();
+    flush();
 }
 
 
@@ -114,26 +115,42 @@ bool UNIOEEPROMClass::copyBlock(int dest, int src) {
 }
 
 bool UNIOEEPROMClass::commit(void) {
-    bool ret = true;
-    int page = 0;
-    if(!_buffer) {
+    if (!_buffer) {
         return false;
     }
-    if(!_isDirty(page)) {
-        return true;
+    if (_writePage >= _pages) {
+        _writePage = 0;
     }
-
     if (_unio->is_writing()) {
         // Previous write is not finished.
         return false;
     } 
+    if (!_isDirty(_writePage)) {
+        _writePage++;
+        return true;
+    }
     if (!_unio->enable_write()) {
         return false;
     }
-    if (!_unio->start_write(_buffer, 0, _size)) {
+    if (!_unio->start_write(&_buffer[_pageAddress(_writePage)], _pageAddress(_writePage), PAGE_SIZE)) {
         return false;
     }
 
-    _clearDirty(page);
-    return ret;
+    _clearDirty(_writePage);
+    _writePage++;
+    return true;
+}
+
+bool UNIOEEPROMClass::flush(void) {
+    uint16_t index;
+    if (!_buffer) {
+        return false;
+    }
+    while (_unio->is_writing());
+    for (index = 0; index < _pages; index++) {
+        if (_isDirty(index)) {
+            _unio->simple_write(&_buffer[_pageAddress(index)], _pageAddress(index), PAGE_SIZE);
+        }
+    }
+    return true;
 }
