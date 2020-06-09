@@ -58,6 +58,9 @@ public:
     size_t blockSize() {
         return _blockSize;
     }
+    uint16_t pages() {
+        return _pages;
+    }
     template<typename T> 
     T &get(int address, T &t) {
         if (!_goodAddress(address, sizeof(T))) {
@@ -127,7 +130,7 @@ protected:
     {
         uint8_t index = DIRTY_BYTE(page);
         if (index < _dirtySize) {
-            _dirty[index] &= DIRTY_BIT(page);
+            _dirty[index] &= ~DIRTY_BIT(page);
         }
     }
 

@@ -58,7 +58,7 @@ class UNIO {
     {
         _buffer = new uint8_t[size];
         // Clear the memory
-        memset(_buffer, 0xff, EEPROM_SIZE);
+        clear();
     }
 
     ~UNIO()
@@ -101,7 +101,7 @@ class UNIO {
         }
         if ((address + length) <= EEPROM_SIZE) {
             memcpy(&_buffer[address], buffer, length);
-            _wtimer = (length / 8) + 1;
+            _wtimer = length + 1;
             disable_write();
             writecounter++;
             return true;
@@ -239,6 +239,10 @@ class UNIO {
         for (index = 0; index < EEPROM_SIZE; index++) {
             set(index, index & 0xFF);
         }
+    }
+    void clear(void)
+    {
+        memset(_buffer, 0xff, EEPROM_SIZE);
     }
 
 };

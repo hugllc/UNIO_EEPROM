@@ -33,6 +33,7 @@ UNIOEEPROMClass::UNIOEEPROMClass(UNIO *unio, size_t size, uint8_t blockSize)
         _buffer = new uint8_t[size];
     }
     _dirty = new uint8_t[_dirtySize];
+    memset(_dirty, 0, _dirtySize);
 }
 
 UNIOEEPROMClass::~UNIOEEPROMClass()
@@ -135,7 +136,6 @@ bool UNIOEEPROMClass::commit(void) {
     if (!_unio->start_write(&_buffer[_pageAddress(_writePage)], _pageAddress(_writePage), PAGE_SIZE)) {
         return false;
     }
-
     _clearDirty(_writePage);
     _writePage++;
     return true;
@@ -150,6 +150,7 @@ bool UNIOEEPROMClass::flush(void) {
     for (index = 0; index < _pages; index++) {
         if (_isDirty(index)) {
             _unio->simple_write(&_buffer[_pageAddress(index)], _pageAddress(index), PAGE_SIZE);
+            _clearDirty(index);
         }
     }
     return true;

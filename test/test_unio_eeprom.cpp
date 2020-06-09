@@ -108,6 +108,23 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
      *
      * @return void
      */
+    FCT_TEST_BGN(pages() returns the number of pages in the E2) {
+        UNIO *unio = new UNIO(0, EEPROM_SIZE);
+        uint16_t value;
+        uint16_t expect = EEPROM_SIZE / 16;
+        unio->incrementPattern();
+        UNIOEEPROMClass *EEPROM = new UNIOEEPROMClass(unio, EEPROM_SIZE, EEPROM_SIZE + 10);
+        value = EEPROM->pages();
+        fct_xchk(value == expect, "Expected %u got %u", expect, value);
+        delete EEPROM;
+        delete unio;
+    }
+    FCT_TEST_END()
+    /**
+     * @brief Test
+     *
+     * @return void
+     */
     FCT_TEST_BGN(Reads the UNIO device properly on begin) {
         UNIO *unio = new UNIO(0, EEPROM_SIZE);
         uint8_t value, expect;
@@ -152,7 +169,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
      *
      * @return void
      */
-    FCT_TEST_BGN(get returns properly) {
+    FCT_TEST_BGN(get() returns properly) {
         UNIO *unio = new UNIO(0, EEPROM_SIZE);
         int32_t value;
         int32_t expect = -1;
@@ -171,7 +188,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
      *
      * @return void
      */
-    FCT_TEST_BGN(get what it was given with a negative address) {
+    FCT_TEST_BGN(get() what it was given with a negative address) {
         UNIO *unio = new UNIO(0, EEPROM_SIZE);
         int32_t value;
         int32_t expect = 682024;
@@ -189,7 +206,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
      *
      * @return void
      */
-    FCT_TEST_BGN(get what it was given with an out of range address) {
+    FCT_TEST_BGN(get() what it was given with an out of range address) {
         UNIO *unio = new UNIO(0, EEPROM_SIZE);
         int32_t value;
         int32_t expect = 682024;
@@ -208,7 +225,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
      *
      * @return void
      */
-    FCT_TEST_BGN(put returns what it is given with an out of range address) {
+    FCT_TEST_BGN(put() returns what it is given with an out of range address) {
         UNIO *unio = new UNIO(0, EEPROM_SIZE);
         int32_t value;
         int32_t expect = -4135690;
@@ -227,7 +244,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
      *
      * @return void
      */
-    FCT_TEST_BGN(put returns what it is given with a negative address) {
+    FCT_TEST_BGN(put() returns what it is given with a negative address) {
         UNIO *unio = new UNIO(0, EEPROM_SIZE);
         int32_t value;
         int32_t expect = -4135690;
@@ -247,7 +264,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
      *
      * @return void
      */
-    FCT_TEST_BGN(put returns what it is given) {
+    FCT_TEST_BGN(put() returns what it is given) {
         UNIO *unio = new UNIO(0, EEPROM_SIZE);
         int32_t value;
         int32_t expect = -4135690;
@@ -267,7 +284,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
      *
      * @return void
      */
-    FCT_TEST_BGN(get and put work together) {
+    FCT_TEST_BGN(get() and put() work together) {
         UNIO *unio = new UNIO(0, EEPROM_SIZE);
         int32_t value;
         int32_t expect = -4135690;
@@ -347,12 +364,42 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
      */
     FCT_TEST_BGN(commit() returns true if the cache is not dirty) {
         UNIO *unio = new UNIO(0, EEPROM_SIZE);
+        uint16_t index;
         bool ret;
         bool retExpect = true;
+        uint16_t value;
+        uint16_t expect = 0;
         UNIOEEPROMClass *EEPROM = new UNIOEEPROMClass(unio, EEPROM_SIZE);
         EEPROM->begin();
-        ret = EEPROM->commit();
-        fct_xchk(ret == retExpect, "Expected %s got %s", retExpect ? "TRUE" : "FALSE", ret ? "TRUE" : "FALSE");
+        for (index = 0; index < (EEPROM->pages() * 2); index++) {
+            ret = EEPROM->commit();
+            fct_xchk(ret == retExpect, "Iteration %d: Expected %s got %s", index, retExpect ? "TRUE" : "FALSE", ret ? "TRUE" : "FALSE");
+        }
+        value = unio->writecounter;
+        fct_xchk(value == expect, "Expected %u got %u", expect, value);
+        delete EEPROM;
+        delete unio;
+    }
+    FCT_TEST_END()
+    /**
+     * @brief Test
+     *
+     * @return void
+     */
+    FCT_TEST_BGN(commit() only writes dirty pages) {
+        UNIO *unio = new UNIO(0, EEPROM_SIZE);
+        uint16_t index;
+        uint16_t value;
+        uint16_t expect = 2;
+        UNIOEEPROMClass *EEPROM = new UNIOEEPROMClass(unio, EEPROM_SIZE);
+        EEPROM->begin();
+        EEPROM->write(0, 0xFE);
+        EEPROM->write(64, 0xFE);
+        for (index = 0; index < (EEPROM->pages() * 100); index++) {
+            EEPROM->commit();
+        }
+        value = unio->writecounter;
+        fct_xchk(value == expect, "Expected %u got %u", expect, value);
         delete EEPROM;
         delete unio;
     }
