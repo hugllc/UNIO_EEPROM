@@ -460,6 +460,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
         UNIOEEPROMClass *EEPROM = new UNIOEEPROMClass(unio, EEPROM_SIZE);
         EEPROM->begin();
         EEPROM->write(addr, 123);
+        EEPROM->write(addr + UNIO_PAGE_SIZE, 123);
         ret = EEPROM->commit();
         retExpect = true;
         fct_xchk(ret == retExpect, "Expected %s got %s", retExpect ? "TRUE" : "FALSE", ret ? "TRUE" : "FALSE");
