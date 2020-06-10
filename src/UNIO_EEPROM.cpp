@@ -122,13 +122,15 @@ bool UNIOEEPROMClass::commit(void) {
     if (_writePage >= _pages) {
         _writePage = 0;
     }
-    if (_unio->is_writing()) {
-        // Previous write is not finished.
-        return false;
-    } 
     if (!_isDirty(_writePage)) {
         _writePage++;
         return true;
+    }
+
+    // This needs to be the last thing before the write_enable
+    if (_unio->is_writing()) {
+        // Previous write is not finished.
+        return false;
     }
     if (!_unio->enable_write()) {
         return false;
@@ -136,6 +138,7 @@ bool UNIOEEPROMClass::commit(void) {
     if (!_unio->start_write(&_buffer[_pageAddress(_writePage)], _pageAddress(_writePage), UNIO_PAGE_SIZE)) {
         return false;
     }
+
     _clearDirty(_writePage);
     _writePage++;
     return true;
