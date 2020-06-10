@@ -23,8 +23,8 @@
 #include "UNIO_EEPROM.h"
 
 UNIOEEPROMClass::UNIOEEPROMClass(UNIO *unio, size_t size, uint8_t blockSize)
- : _unio(unio), _size(size), _blockSize(blockSize), _pages(size / PAGE_SIZE), 
-   _dirtySize((size / (PAGE_SIZE * sizeof(uint8_t))) + 1), _writePage(0)
+ : _unio(unio), _size(size), _blockSize(blockSize), _pages(size / UNIO_PAGE_SIZE), 
+   _dirtySize((size / (UNIO_PAGE_SIZE * sizeof(uint8_t))) + 1), _writePage(0)
 {
     if (_blockSize > size) {
         _blockSize = size;
@@ -133,7 +133,7 @@ bool UNIOEEPROMClass::commit(void) {
     if (!_unio->enable_write()) {
         return false;
     }
-    if (!_unio->start_write(&_buffer[_pageAddress(_writePage)], _pageAddress(_writePage), PAGE_SIZE)) {
+    if (!_unio->start_write(&_buffer[_pageAddress(_writePage)], _pageAddress(_writePage), UNIO_PAGE_SIZE)) {
         return false;
     }
     _clearDirty(_writePage);
@@ -149,7 +149,7 @@ bool UNIOEEPROMClass::flush(void) {
     while (_unio->is_writing());
     for (index = 0; index < _pages; index++) {
         if (_isDirty(index)) {
-            _unio->simple_write(&_buffer[_pageAddress(index)], _pageAddress(index), PAGE_SIZE);
+            _unio->simple_write(&_buffer[_pageAddress(index)], _pageAddress(index), UNIO_PAGE_SIZE);
             _clearDirty(index);
         }
     }

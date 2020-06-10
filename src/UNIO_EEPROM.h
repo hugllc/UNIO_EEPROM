@@ -29,8 +29,8 @@
 
 #include <UNIO.h>
 
-#ifndef PAGE_SIZE
-#define PAGE_SIZE 16
+#ifndef UNIO_PAGE_SIZE
+#define UNIO_PAGE_SIZE 16
 #endif
 
 #define DIRTY_BIT(page) ((1 << (page & 0x7)) & 0xFF)
@@ -104,11 +104,11 @@ protected:
 
     int _addressPage(int address)
     {
-        return address / PAGE_SIZE;
+        return address / UNIO_PAGE_SIZE;
     }
     int _pageAddress(int page)
     {
-        return page * PAGE_SIZE;
+        return page * UNIO_PAGE_SIZE;
     }
 
     bool _isDirty(uint16_t page)
