@@ -23,14 +23,24 @@
 #include "UNIO_EEPROM.h"
 
 UNIOEEPROMClass::UNIOEEPROMClass(UNIO *unio, size_t size, uint8_t blockSize)
- : _unio(unio), _size(size), _blockSize(blockSize), _pages(size / UNIO_PAGE_SIZE), 
-   _dirtySize((size / (UNIO_PAGE_SIZE * sizeof(uint8_t))) + 1), _writePage(0)
+ : _free(false), _unio(unio), _size(size), _blockSize(blockSize)
 {
-    if (_blockSize > size) {
-        _blockSize = size;
+    _init();
+}
+UNIOEEPROMClass::UNIOEEPROMClass(unsigned int address, size_t size, uint8_t blockSize)
+ : _free(true), _unio(new UNIO((uint8_t)address)), _size(size), _blockSize(blockSize)
+{
+    _init();
+}
+void UNIOEEPROMClass::_init(void) {
+    _pages = _size / UNIO_PAGE_SIZE; 
+    _dirtySize = (_size / (UNIO_PAGE_SIZE * sizeof(uint8_t))) + 1;
+    _writePage = 0;
+    if (_blockSize > _size) {
+        _blockSize = _size;
     }
-    if (size > 0) {
-        _buffer = new uint8_t[size];
+    if (_size > 0) {
+        _buffer = new uint8_t[_size];
     }
     _dirty = new uint8_t[_dirtySize];
     memset(_dirty, 0, _dirtySize);
@@ -39,6 +49,9 @@ UNIOEEPROMClass::UNIOEEPROMClass(UNIO *unio, size_t size, uint8_t blockSize)
 UNIOEEPROMClass::~UNIOEEPROMClass()
 {
     end();
+    if (_free) {
+        delete _unio;
+    }
     delete [] _buffer;
     delete [] _dirty;
     _buffer = NULL;

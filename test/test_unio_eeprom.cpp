@@ -40,7 +40,77 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
      *
      * @return void
      */
-    FCT_TEST_BGN(size() is accurate) {
+    FCT_TEST_BGN(size() is accurate (unio built)) {
+        uint16_t value;
+        uint16_t expect = EEPROM_SIZE;
+        UNIOEEPROMClass *EEPROM = new UNIOEEPROMClass(0u, expect);
+        value = EEPROM->size();
+        fct_xchk(value == expect, "Expected %u got %u", expect, value);
+        delete EEPROM;
+    }
+    FCT_TEST_END()
+    /**
+     * @brief Test
+     *
+     * @return void
+     */
+    FCT_TEST_BGN(blockSize() is accurate (unio built)) {
+        uint16_t value;
+        uint16_t expect = 8;
+        UNIOEEPROMClass *EEPROM = new UNIOEEPROMClass(0u, EEPROM_SIZE, expect);
+        value = EEPROM->blockSize();
+        fct_xchk(value == expect, "Expected %u got %u", expect, value);
+        delete EEPROM;
+    }
+    FCT_TEST_END()
+    /**
+     * @brief Test
+     *
+     * @return void
+     */
+    FCT_TEST_BGN(blockSize() defaults to 0 (unio built)) {
+        uint16_t value;
+        uint16_t expect = 0;
+        UNIOEEPROMClass *EEPROM = new UNIOEEPROMClass(0u, EEPROM_SIZE);
+        value = EEPROM->blockSize();
+        fct_xchk(value == expect, "Expected %u got %u", expect, value);
+        delete EEPROM;
+    }
+    FCT_TEST_END()
+    /**
+     * @brief Test
+     *
+     * @return void
+     */
+    FCT_TEST_BGN(blockSize() limited to EEPROM size (unio built)) {
+        uint16_t value;
+        uint16_t expect = EEPROM_SIZE;
+        UNIOEEPROMClass *EEPROM = new UNIOEEPROMClass(0u, EEPROM_SIZE, EEPROM_SIZE + 10);
+        value = EEPROM->blockSize();
+        fct_xchk(value == expect, "Expected %u got %u", expect, value);
+        delete EEPROM;
+    }
+    FCT_TEST_END()
+    /**
+     * @brief Test
+     *
+     * @return void
+     */
+    FCT_TEST_BGN(pages() returns the number of pages in the E2 (unio built)) {
+        uint16_t value;
+        uint16_t expect = EEPROM_SIZE / 16;
+        UNIOEEPROMClass *EEPROM = new UNIOEEPROMClass(0u, EEPROM_SIZE, EEPROM_SIZE + 10);
+        value = EEPROM->pages();
+        fct_xchk(value == expect, "Expected %u got %u", expect, value);
+        delete EEPROM;
+    }
+    FCT_TEST_END()
+    /**
+     * @brief Test
+     *
+     * @return void
+     */
+    FCT_TEST_BGN(size() is accurate (unio given)) {
         UNIO *unio = new UNIO(0, EEPROM_SIZE);
         uint16_t value;
         uint16_t expect = EEPROM_SIZE;
@@ -57,7 +127,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
      *
      * @return void
      */
-    FCT_TEST_BGN(blockSize() is accurate) {
+    FCT_TEST_BGN(blockSize() is accurate (unio given)) {
         UNIO *unio = new UNIO(0, EEPROM_SIZE);
         uint16_t value;
         uint16_t expect = 8;
@@ -74,7 +144,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
      *
      * @return void
      */
-    FCT_TEST_BGN(blockSize() defaults to 0) {
+    FCT_TEST_BGN(blockSize() defaults to 0 (unio given)) {
         UNIO *unio = new UNIO(0, EEPROM_SIZE);
         uint16_t value;
         uint16_t expect = 0;
@@ -91,7 +161,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
      *
      * @return void
      */
-    FCT_TEST_BGN(blockSize() limited to EEPROM size) {
+    FCT_TEST_BGN(blockSize() limited to EEPROM size (unio given)) {
         UNIO *unio = new UNIO(0, EEPROM_SIZE);
         uint16_t value;
         uint16_t expect = EEPROM_SIZE;
@@ -108,7 +178,7 @@ FCTMF_FIXTURE_SUITE_BGN(test_unio_eeprom)
      *
      * @return void
      */
-    FCT_TEST_BGN(pages() returns the number of pages in the E2) {
+    FCT_TEST_BGN(pages() returns the number of pages in the E2 (unio given)) {
         UNIO *unio = new UNIO(0, EEPROM_SIZE);
         uint16_t value;
         uint16_t expect = EEPROM_SIZE / 16;

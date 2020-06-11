@@ -37,8 +37,12 @@
 #define DIRTY_BYTE(page) (page >> 3)
 
 class UNIOEEPROMClass {
+private:
+    void _init(void);
+    bool _free;
 public:
     UNIOEEPROMClass(UNIO *unio, size_t size, uint8_t blockSize = 0);
+    UNIOEEPROMClass(unsigned int address, size_t size, uint8_t blockSize = 0);
     ~UNIOEEPROMClass();
 
     void begin(void);
@@ -133,7 +137,6 @@ protected:
             _dirty[index] &= ~DIRTY_BIT(page);
         }
     }
-
 };
 
 #endif // UNIO_EEPROM_H
