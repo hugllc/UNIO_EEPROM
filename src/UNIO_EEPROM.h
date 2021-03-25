@@ -39,7 +39,7 @@
 class UNIOEEPROMClass {
 private:
     void _init(void);
-    bool _free;
+    bool _free = false;
 public:
     UNIOEEPROMClass(UNIO *unio, size_t size, uint8_t blockSize = 0);
     UNIOEEPROMClass(unsigned int address, size_t size, uint8_t blockSize = 0);
@@ -86,14 +86,14 @@ public:
     }
 
 protected:
-    UNIO *_unio;
+    UNIO *_unio = NULL;
     uint8_t* _buffer = NULL;
-    uint8_t* _dirty;
-    size_t _size;
-    uint8_t _blockSize;
-    uint16_t _pages;
-    uint8_t _dirtySize;
-    uint16_t _writePage;
+    uint8_t* _dirty = NULL;
+    size_t _size = 0;
+    uint8_t _blockSize = 0;
+    uint16_t _pages = 0;
+    uint8_t _dirtySize = 0;
+    uint16_t _writePage = 0;
 
     bool _goodAddress(int address, size_t size = 0)
     {
@@ -137,6 +137,20 @@ protected:
             _dirty[index] &= ~DIRTY_BIT(page);
         }
     }
+    /**
+     * Copying not allowed
+     */
+    UNIOEEPROMClass(const UNIOEEPROMClass &other)
+    {
+    }
+    /**
+     * Copying not allowed
+     */
+    UNIOEEPROMClass &operator=(const UNIOEEPROMClass &other)
+    {
+        return *this;
+    }
+
 };
 
 #endif // UNIO_EEPROM_H

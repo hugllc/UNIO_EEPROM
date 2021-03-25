@@ -33,15 +33,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 class UNIO {
     private:
-    uint8_t *_buffer;
-    uint8_t _addr;
-    bool _wenable;
-    uint8_t _protect;
-    int16_t _wtimer;
-    uint32_t _size;
+    uint8_t *_buffer = NULL;
+    uint8_t _addr = 0;
+    bool _wenable = false;
+    uint8_t _protect = 0;
+    int16_t _wtimer = 0;
+    uint32_t _size = 0;
     
     public:
-    uint32_t writecounter;
+    uint32_t writecounter = 0;
     bool enable_write_ret = true;
     bool start_write_ret = true;
 
@@ -54,7 +54,7 @@ class UNIO {
      * For Arduino SAMC the pin must be a Port A pin number
      */
     UNIO(uint8_t address = 0, uint32_t size = 128)
-    :_addr(address), _wenable(false), _protect(0), _wtimer(0), _size(size), writecounter(0)
+    :_addr(address),_size(size)
     {
         _buffer = new uint8_t[size];
         // Clear the memory
@@ -243,6 +243,19 @@ class UNIO {
     void clear(void)
     {
         memset(_buffer, 0xff, EEPROM_SIZE);
+    }
+    /**
+     * Copying not allowed
+     */
+    UNIO(const UNIO &other)
+    {
+    }
+    /**
+     * Copying not allowed
+     */
+    UNIO &operator=(const UNIO &other)
+    {
+        return *this;
     }
 
 };

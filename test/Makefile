@@ -21,7 +21,8 @@ CFLAGS+=-D_TEST_ \
         -I$(SRCDIR) \
         -DPROGMEM= \
 		-DEEPROM_SIZE=128 \
-        -fsanitize=address
+        -fsanitize=address \
+		-Weffc++
 
 CFLAGS_TEST+= -fprofile-arcs -ftest-coverage -Wall -Werror -Wextra -Wno-unused-parameter -gdwarf-2
 CFLAGS_TEST+= -Werror=float-equal
